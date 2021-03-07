@@ -98,3 +98,12 @@ qiime diversity core-metrics-phylogenetic \
   --m-metadata-file ./metadata.tsv \
   --p-sampling-depth 40000 \
   --output-dir ./core-metrics-results_mafft-40000
+
+## Export feature table 
+qiime tools export \
+  --input-path ./core-metrics-results_mafft-40000/rarefied_table.qza \
+  --output-path ./core-metrics-results_mafft-40000/
+  
+biom convert --to-tsv \
+  -i ./core-metrics-results_mafft-40000/feature-table.biom \
+  -o ./core-metrics-results_mafft-40000/feature-table_mafft-40000.tsv
