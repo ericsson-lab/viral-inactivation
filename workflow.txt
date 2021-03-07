@@ -1,0 +1,100 @@
+Created: 2/23/21
+Last Edited: 3/6/21
+
+## Shorten sequence names
+for file in *R1*.gz; do [ -f "$file" ] || continue; mv -vf "$file" "${file//_*R1_001.fastq.gz/_R1.fastq.gz}"; done
+for file in *R2*.gz; do [ -f "$file" ] || continue; mv -vf "$file" "${file//_*R2_001.fastq.gz/_R2.fastq.gz}; done
+## Activate QIIME2
+module load miniconda3
+source activate qiime2-2021.2
+
+-----------------------------------------------------------------
+## IMPORT & PROCESS
+-----------------------------------------------------------------
+
+## Import demux seqs from manfest file
+qiime tools import \
+  --type "SampleData[PairedEndSequencesWithQuality]" \
+  --input-format PairedEndFastqManifestPhred33 \
+  --input-path ./manifest.csv \
+  --output-path ./demux_seqs.qza
+## Had to remove some files from manifest.csv to allow import to run. 
+## See NOTES.txt for details
+
+
+## cutadapt - remove adapters/primers from sequencing
+qiime cutadapt trim-paired \
+  --i-demultiplexed-sequences demux_seqs.qza \
+  --p-cores 4 \
+  --p-adapter-f 'ATTAGAWACCCBDGTAGTCC' \
+  --p-front-f 'GTGCCAGCMGCCGCGGTAA' \
+  --p-adapter-r 'TTACCGCGGCKGCTGGCAC' \
+  --p-front-r 'GGACTACHVGGGTWTCTAAT' \
+  --o-trimmed-sequences ./trimmed_demux_seqs.qza
+
+
+## Summarize to get trim lengths in view.qiime2.org
+# Will have to move back to local machine to visualize
+qiime demux summarize \
+  --i-data ./trimmed_demux_seqs.qza \
+  --o-visualization ./trimmed_demux_seqs.qzv
+
+-----------------------------------------------------------------
+## DADA2 DENOISE & VISUALIZATION
+-----------------------------------------------------------------
+## DADA2 Denoise 
+## Truncation depth determined by viewing trimmed_demux_seqs.qzv
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs ./trimmed_demux_seqs.qza \
+  --p-trunc-len-f 230 \
+  --p-trunc-len-r 150 \
+  --o-table ./dada2_table.qza \
+  --o-representative-sequences ./dada2_rep_seqs.qza \
+  --o-denoising-stats ./dada2_stats.qza \
+  --p-n-threads 8
+
+## DADA2 Visualization
+# Denoising stats
+qiime metadata tabulate \
+  --m-input-file ./dada2_stats.qza  \
+  --o-visualization ./dada2_stats.qzv
+
+# Get feature table 
+qiime feature-table summarize \
+  --i-table ./dada2_table.qza \
+  --m-sample-metadata-file ./metadata.tsv \
+  --o-visualization ./dada2_table.qzv
+
+# Get feature-table data
+qiime feature-table tabulate-seqs \
+  --i-data ./dada2_rep_seqs.qza \
+  --o-visualization ./dada2_rep_seq.qzv
+
+-----------------------------------------------------------------
+## PHYLOGENY
+-----------------------------------------------------------------
+## Assigning phylogeny using de novo mafft fasttree method
+qiime phylogeny align-to-tree-mafft-fasttree \
+  --i-sequences dada2_rep_seqs.qza \
+  --o-alignment aligned-rep-seqs.qza \
+  --o-masked-alignment masked-aligned-rep-seqs.qza \
+  --o-tree unrooted-tree.qza \
+  --o-rooted-tree rooted-tree.qza
+
+## Visualizing rarefaction depths
+#  Change the maxdepth to highest count from dada2_stats.qzv 
+qiime diversity alpha-rarefaction \
+  --i-table ./dada2_table.qza \
+  --m-metadata-file ./metadata.tsv \
+  --o-visualization ./alpha_rarefaction_curves.qzv \
+  --p-min-depth 1 \
+  --p-max-depth 138471
+
+## Core metrics files
+# Change sampling depth from rarefaction decision
+qiime diversity core-metrics-phylogenetic \
+  --i-table ./dada2_table.qza \
+  --i-phylogeny ./rooted-tree.qza \
+  --m-metadata-file ./metadata.tsv \
+  --p-sampling-depth 40000 \
+  --output-dir ./core-metrics-results_mafft-40000

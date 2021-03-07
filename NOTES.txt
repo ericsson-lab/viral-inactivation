@@ -1,0 +1,24 @@
+Viral Inactivation Project
+Jan 2021
+
+Some viral infections present a risk to researchers as their infections
+particles can be present in samples including tissue and feces. Here we
+apply common viral inactivation techniques to DNA extraction method to 
+access their effect on the 16s rRNA characterization of the gut microb-
+iome.
+
+These methods include:
+	1) Control - QIAamp PowerFecal DNA Extraction Kit
+	2) SDS - Previously established 4% SDS lysis buffer
+	3) Holder Pasteurization - 63°C for 30 min
+	4) Buffer AVL - High - guanidinium thianocynate salt
+	5) Buffer AVL + Heat - guanininium thianocynate salt + 60° for 
+	   15 min.
+	6) TRIzol - phenol/guanidinium thianocynate salt
+
+-----------------------------------------------------------------------
+
+Errors with Importing:
+	-Missing samples from fastq files
+	-Missing sample #'s: 65, 66, 68, 69, 71-80
+	-All apart of TRIzol group
