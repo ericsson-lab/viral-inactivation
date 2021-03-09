@@ -1,5 +1,5 @@
 SampleID	plate_location	date_collected	date_extracted	method_letter	Mouse	GM	Sex	CageID	Mouse_DOB	Method_of_Extraction	DNA-con
-#q2-types	categorical	categorical	categorical	categorical	categorical	categorical	categorical	categorical	categorical	categorical	numeric
+#q2-types categorical categorical categorical categorical categorical categorical categorical categorical categorical categorical numeric
 ZM017	A1	2/2/21	2/3/21	A	1	4	Female	397128	12/17/2Control	11.2
 ZM018	A2	2/2/21	2/3/21	A	2	4	Female	397128	12/17/2Control	7.48
 ZM019	A3	2/2/21	2/3/21	A	3	4	Female	396516	11/25/2Control	18.4
