@@ -1,5 +1,5 @@
 Created: 2/23/21
-Last Edited: 3/6/21
+Last Edited: 6/24/21
 
 ## Shorten sequence names
 for file in *R1*.gz; do [ -f "$file" ] || continue; mv -vf "$file" "${file//_*R1_001.fastq.gz/_R1.fastq.gz}"; done
@@ -107,3 +107,27 @@ qiime tools export \
 biom convert --to-tsv \
   -i ./core-metrics-results_mafft-40000/feature-table.biom \
   -o ./core-metrics-results_mafft-40000/feature-table_mafft-40000.tsv
+  
+  -----------------------------------------------------------------
+## TAXONOMY
+-----------------------------------------------------------------
+
+## Assign taxonomy from readytowear animal-distal-gut classifier
+
+## Assign taxonomy
+qiime feature-classifier classify-sklearn \
+  --i-reads ./dada2_rep_seqs.qza \
+  --i-classifier ../feature-classifiers/silva138_v4_animal-distal-gut.qza \
+  --o-classification ./taxonomy.qza
+
+## Visualize taxonomy
+qiime metadata tabulate \
+  --m-input-file ./taxonomy.qza \
+  --o-visualization ./taxonomy.qzv
+  
+## Generate taxa barplot with rarefied feature table from core-metrics-results
+qiime taxa barplot \
+  --i-table ./core-metrics-results_mafft-fasttree_40000/rarefied_table.qza \
+  --i-taxonomy ./taxonomy.qza \
+  --m-metadata-file ./metadata.tsv \
+  --o-visualization ./taxa_barplot_mafft-40000.qzv
